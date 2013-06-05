@@ -6,7 +6,8 @@
 	    prototype = $.fn,
 	    valHooks = $.valHooks,
 	    hooks,
-	    placeholder;
+	    placeholder,
+        className = 'placeholder';  //  the default name for the class toggled
 
 	if (isInputSupported && isTextareaSupported) {
 
@@ -18,7 +19,9 @@
 
 	} else {
 
-		placeholder = prototype.placeholder = function() {
+		placeholder = prototype.placeholder = function(newClassName) {
+            typeof newClassName !== 'undefined' && className = newClassName;
+			
 			var $this = this;
 			$this
 				.filter((isInputSupported ? 'textarea' : ':input') + '[placeholder]')
@@ -38,7 +41,7 @@
 		hooks = {
 			'get': function(element) {
 				var $element = $(element);
-				return $element.data('placeholder-enabled') && $element.hasClass('placeholder') ? '' : element.value;
+				return $element.data('placeholder-enabled') && $element.hasClass(className) ? '' : element.value;
 			},
 			'set': function(element, value) {
 				var $element = $(element);
@@ -52,7 +55,7 @@
 						// We can't use `triggerHandler` here because of dummy text/password inputs :(
 						setPlaceholder.call(element);
 					}
-				} else if ($element.hasClass('placeholder')) {
+				} else if ($element.hasClass(className)) {
 					clearPlaceholder.call(element, true, value) || (element.value = value);
 				} else {
 					element.value = value;
@@ -100,7 +103,7 @@
 	function clearPlaceholder(event, value) {
 		var input = this,
 		    $input = $(input);
-		if (input.value == $input.attr('placeholder') && $input.hasClass('placeholder')) {
+		if (input.value == $input.attr('placeholder') && $input.hasClass(className)) {
 			if ($input.data('placeholder-password')) {
 				$input = $input.hide().next().show().attr('id', $input.removeAttr('id').data('placeholder-id'));
 				// If `clearPlaceholder` was called from `$.valHooks.input.set`
@@ -110,7 +113,7 @@
 				$input.focus();
 			} else {
 				input.value = '';
-				$input.removeClass('placeholder');
+				$input.removeClass(className);
 				input == document.activeElement && input.select();
 			}
 		}
@@ -147,10 +150,10 @@
 				$input = $input.removeAttr('id').hide().prev().attr('id', id).show();
 				// Note: `$input[0] != input` now!
 			}
-			$input.addClass('placeholder');
+			$input.addClass(className);
 			$input[0].value = $input.attr('placeholder');
 		} else {
-			$input.removeClass('placeholder');
+			$input.removeClass(className);
 		}
 	}
 
